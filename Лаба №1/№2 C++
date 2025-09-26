@@ -1,0 +1,30 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<char> original = {'a', '1', 'b', '2', 'c', '3'};
+    vector<char> letters;
+    vector<char> numbers;
+
+    for (char c : original) {
+        if (c >= 'a' && c <= 'z') {  // Ïðîñòàÿ ïðîâåðêà íà áóêâû
+            letters.push_back(c);
+        } else if (c >= '0' && c <= '9') {  // Ïðîñòàÿ ïðîâåðêà íà öèôðû
+            numbers.push_back(c);
+        }
+    }
+
+    // Âûâîä áóêâ
+    for (char c : letters) {
+        cout << c;
+    }
+    cout << endl;
+
+    // Âûâîä öèôð
+    for (char c : numbers) {
+        cout << c;
+    }
+
+    return 0;
+}
