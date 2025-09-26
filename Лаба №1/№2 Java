@@ -1,0 +1,28 @@
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        char[] original = {'a', '1', 'b', '2', 'c', '3'}; //Ìàññèâ
+        ArrayList<Character> letters = new ArrayList<>(); //Ñîçäàíèå ñïèñêà
+        ArrayList<Character> numbers = new ArrayList<>(); //Ñîçäàíèå ñïèñêà
+
+        for (char c : original) { //×òåíèå ñèìâîëîâ
+            if (c >= 'a' && c <= 'z') { //Ïðîâåðêà íà áóêâó
+                letters.add(c); //Äîáàâëåíèå áóêâû ñ ñïèñîê
+            } else if (c >= '0' && c <= '9') { //Ïðîâåðêà íà öèôðó
+                numbers.add(c); //Äîáàâëåíèå öèôðû â ñïèñîê
+            }
+        }
+
+        // Âûâîä áóêâ
+        for (char c : letters) {
+            System.out.print(c);
+        }
+        System.out.println();
+
+        // Âûâîä öèôð
+        for (char c : numbers) {
+            System.out.print(c);
+        }
+    }
+}
