@@ -1,74 +1,131 @@
 import java.util.*;
 
+/**
+ * Реализация минимальной бинарной кучи (Min Heap) на Java
+ * Бинарная куча - это полное бинарное дерево, где каждый родительский узел
+ * меньше или равен своим потомкам (свойство минимальной кучи)
+ */
 public class BinaryHeap<T extends Comparable<T>> {
-    private ArrayList<T> heap;
+    private ArrayList<T> heap;  // Основной список для хранения элементов кучи
 
+    /**
+     * Просеивание элемента вверх для восстановления свойства кучи
+     * Используется после добавления нового элемента
+     * @param idx индекс элемента, который нужно просеить вверх
+     */
     private void siftUp(int idx) {
+        // Поднимаем элемент, пока он не достигнет корня или не займет правильную позицию
         while (idx > 0) {
-            int parent = (idx - 1) / 2;
+            int parent = (idx - 1) / 2;  // Вычисляем индекс родительского элемента
+            // Если текущий элемент больше или равен родителю - свойство кучи выполнено
             if (heap.get(idx).compareTo(heap.get(parent)) >= 0) break;
+            // Меняем местами с родителем, так как текущий элемент меньше
             Collections.swap(heap, idx, parent);
-            idx = parent;
+            idx = parent;  // Переходим к позиции родителя
         }
     }
 
+    /**
+     * Просеивание элемента вниз для восстановления свойства кучи
+     * Используется после удаления корневого элемента
+     * @param idx индекс элемента, который нужно просеить вниз
+     */
     private void siftDown(int idx) {
         int size = heap.size();
+        // Просеиваем вниз, пока у элемента есть потомки
         while (idx < size) {
-            int left = 2 * idx + 1;
-            int right = 2 * idx + 2;
-            int minIdx = idx;
+            int left = 2 * idx + 1;   // Индекс левого потомка
+            int right = 2 * idx + 2;  // Индекс правого потомка
+            int minIdx = idx;         // Индекс минимального элемента (текущий элемент)
 
+            // Сравниваем с левым потомком, если он существует
             if (left < size && heap.get(left).compareTo(heap.get(minIdx)) < 0) 
                 minIdx = left;
+            // Сравниваем с правым потомком, если он существует
             if (right < size && heap.get(right).compareTo(heap.get(minIdx)) < 0) 
                 minIdx = right;
+            // Если текущий элемент уже минимальный - свойство кучи восстановлено
             if (minIdx == idx) break;
 
+            // Меняем местами с наименьшим потомком
             Collections.swap(heap, idx, minIdx);
-            idx = minIdx;
+            idx = minIdx;  // Переходим к позиции потомка
         }
     }
 
+    /**
+     * Конструктор - создает пустую кучу
+     */
     public BinaryHeap() {
         heap = new ArrayList<>();
     }
     
+    /**
+     * Конструктор - строит кучу из существующего списка элементов
+     * @param elements список элементов для построения кучи
+     */
     public BinaryHeap(ArrayList<T> elements) {
-        heap = new ArrayList<>(elements);
+        heap = new ArrayList<>(elements);  // Копируем элементы
+        // Просеиваем вниз все нелистовые элементы, начиная с последнего родителя
+        // Это обеспечивает построение корректной кучи за O(n) времени
         for (int i = heap.size() / 2 - 1; i >= 0; i--) 
             siftDown(i);
     }
 
+    /**
+     * Добавление нового элемента в кучу
+     * @param value значение для добавления
+     */
     public void push(T value) {
-        heap.add(value);
-        siftUp(heap.size() - 1);
+        heap.add(value);              // Добавляем элемент в конец списка
+        siftUp(heap.size() - 1);     // Восстанавливаем свойство кучи
     }
 
+    /**
+     * Удаление и возврат минимального элемента (корня кучи)
+     * @return минимальный элемент
+     * @throws RuntimeException если куча пуста
+     */
     public T pop() {
         if (heap.isEmpty()) throw new RuntimeException("Heap is empty");
         
-        T min = heap.get(0);
-        heap.set(0, heap.get(heap.size() - 1));
-        heap.remove(heap.size() - 1);
+        T min = heap.get(0);                              // Сохраняем минимальный элемент
+        heap.set(0, heap.get(heap.size() - 1));          // Перемещаем последний элемент в корень
+        heap.remove(heap.size() - 1);                    // Удаляем последний элемент
         
+        // Восстанавливаем свойство кучи, если она не пуста
         if (!heap.isEmpty()) siftDown(0);
-        return min;
+        return min;                                       // Возвращаем минимальный элемент
     }
-
+/**
+     * Получение минимального элемента без удаления
+     * @return минимальный элемент
+     * @throws RuntimeException если куча пуста
+     */
     public T top() {
         if (heap.isEmpty()) throw new RuntimeException("Heap is empty");
-        return heap.get(0);
+        return heap.get(0);  // Корень минимальной кучи всегда содержит наименьший элемент
     }
 
+    /**
+     * Проверка, пуста ли куча
+     * @return true если куча пуста, false в противном случае
+     */
     public boolean empty() { 
         return heap.isEmpty(); 
     }
     
+    /**
+     * Получение количества элементов в куче
+     * @return размер кучи
+     */
     public int size() { 
         return heap.size(); 
     }
 
+    /**
+     * Вывод всех элементов кучи
+     */
     public void print() {
         System.out.print("Heap: ");
         for (T x : heap) 
@@ -76,18 +133,23 @@ public class BinaryHeap<T extends Comparable<T>> {
         System.out.println();
     }
 
+    /**
+     * Демонстрация работы минимальной кучи
+     */
     public static void main(String[] args) {
-        BinaryHeap<Integer> heap = new BinaryHeap<>();
+        BinaryHeap<Integer> heap = new BinaryHeap<>();  // Создание пустой кучи
         
+        // Добавление элементов в произвольном порядке
         heap.push(5);
         heap.push(3);
         heap.push(8);
-        heap.push(1);
+        heap.push(1);  // Станет новым минимумом
         heap.push(4);
 
-        heap.print();
-        System.out.println("Min: " + heap.top());
+        heap.print();  // Вывод текущего состояния кучи
+        System.out.println("Min: " + heap.top());  // Получение минимального элемента
 
+        // Последовательное извлечение всех элементов в отсортированном порядке
         System.out.print("Popping: ");
         while (!heap.empty()) 
             System.out.print(heap.pop() + " ");
