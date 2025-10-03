@@ -1,0 +1,67 @@
+import java.util.*;
+
+public class BinaryHeap<T extends Comparable<T>> {
+    private ArrayList<T> heap = new ArrayList<>();
+    
+    private void siftUp(int i) {
+        while (i > 0 && heap.get(i).compareTo(heap.get((i-1)/2)) < 0) {
+            Collections.swap(heap, i, (i-1)/2);
+            i = (i-1)/2;
+        }
+    }
+    
+    private void siftDown(int i) {
+        int n = heap.size();
+        while (2*i+1 < n) {
+            int child = 2*i+1;
+            if (child+1 < n && heap.get(child+1).compareTo(heap.get(child)) < 0) child++;
+            if (heap.get(i).compareTo(heap.get(child)) <= 0) break;
+            Collections.swap(heap, i, child);
+            i = child;
+        }
+    }
+
+    public void insert(T value) {
+        heap.add(value);
+        siftUp(heap.size()-1);
+    }
+    
+    public T extractMin() {
+        if (heap.isEmpty()) throw new RuntimeException("Heap empty");
+        T min = heap.get(0);
+        heap.set(0, heap.get(heap.size()-1));
+        heap.remove(heap.size()-1);
+        if (!heap.isEmpty()) siftDown(0);
+        return min;
+    }
+    
+    public T getMin() {
+        if (heap.isEmpty()) throw new RuntimeException("Heap empty");
+        return heap.get(0);
+    }
+    
+    public boolean empty() { return heap.isEmpty(); }
+    public int size() { return heap.size(); }
+    
+    public void print() {
+        for (T x : heap) System.out.print(x + " ");
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        BinaryHeap<Integer> heap = new BinaryHeap<>();
+        
+        heap.insert(10);
+        heap.insert(5);
+        heap.insert(15);
+        heap.insert(3);
+        heap.insert(7);
+
+        heap.print();
+        System.out.println("Min: " + heap.getMin());
+
+        System.out.print("Extracting: ");
+        while (!heap.empty()) System.out.print(heap.extractMin() + " ");
+        System.out.println();
+    }
+}
