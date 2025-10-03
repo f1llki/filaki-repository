@@ -2,71 +2,93 @@
 #include <vector>
 #include <stdexcept>
 
+// Класс минимальной бинарной кучи
 template<typename T>
 class BinaryHeap {
-    std::vector<T> heap;
+    std::vector<T> heap;  // Вектор для хранения элементов в виде полного бинарного дерева
     
+    // Просеивание вверх - восстанавливает свойство кучи после добавления элемента
     void siftUp(int i) {
+        // Поднимаем элемент, пока он меньше своего родителя
         while (i > 0 && heap[i] < heap[(i-1)/2]) {
+            // Меняем местами с родителем
             std::swap(heap[i], heap[(i-1)/2]);
+            // Переходим на позицию родителя
             i = (i-1)/2;
         }
     }
     
+    // Просеивание вниз - восстанавливает свойство кучи после удаления корня
     void siftDown(int i) {
         int n = heap.size();
+        // Пока у элемента есть хотя бы один потомок (левый)
         while (2*i+1 < n) {
-            int child = 2*i+1;
+            int child = 2*i+1;  // Начинаем с левого потомка
+            // Если правый потомок существует и меньше левого, выбираем его
             if (child+1 < n && heap[child+1] < heap[child]) child++;
+            // Если текущий элемент уже меньше или равен наименьшему потомку - остановка
             if (heap[i] <= heap[child]) break;
+            // Меняем местами с наименьшим потомком
             std::swap(heap[i], heap[child]);
+            // Переходим к позиции потомка
             i = child;
         }
     }
 
 public:
+    // Конструктор по умолчанию
     BinaryHeap() = default;
     
+    // Добавление элемента в кучу
     void insert(T value) {
-        heap.push_back(value);
-        siftUp(heap.size()-1);
+        heap.push_back(value);      // Добавляем в конец вектора
+        siftUp(heap.size()-1);     // Восстанавливаем свойство кучи
     }
     
+    // Извлечение минимального элемента (корня)
     T extractMin() {
         if (heap.empty()) throw std::runtime_error("Heap empty");
-        T min = heap[0];
-        heap[0] = heap.back();
-        heap.pop_back();
+        T min = heap[0];           // Сохраняем минимальный элемент
+        heap[0] = heap.back();     // Перемещаем последний элемент в корень
+        heap.pop_back();           // Удаляем последний элемент
+        // Если куча не пуста, восстанавливаем свойство кучи
         if (!heap.empty()) siftDown(0);
         return min;
     }
     
+    // Получение минимального элемента без извлечения
     T getMin() const {
         if (heap.empty()) throw std::runtime_error("Heap empty");
-        return heap[0];
+        return heap[0];  // Корень всегда содержит минимальный элемент
     }
     
+    // Проверка на пустоту
     bool empty() const { return heap.empty(); }
+    // Получение размера кучи
     size_t size() const { return heap.size(); }
     
+    // Вывод всех элементов кучи
     void print() const {
         for (auto& x : heap) std::cout << x << " ";
         std::cout << "\n";
     }
 };
 
+// Демонстрация работы кучи
 int main() {
-    BinaryHeap<int> heap;
+    BinaryHeap<int> heap;  // Создание минимальной кучи для целых чисел
     
+    // Добавление элементов в произвольном порядке
     heap.insert(10);
     heap.insert(5);
     heap.insert(15);
-    heap.insert(3);
+    heap.insert(3);  // Станет новым минимумом
     heap.insert(7);
 
-    heap.print();
-    std::cout << "Min: " << heap.getMin() << "\n";
+    heap.print();  // Вывод текущего состояния кучи
+    std::cout << "Min: " << heap.getMin() << "\n";  // Получение минимального элемента
 
+    // Извлечение всех элементов в отсортированном порядке
     std::cout << "Extracting: ";
     while (!heap.empty()) std::cout << heap.extractMin() << " ";
     std::cout << "\n";
