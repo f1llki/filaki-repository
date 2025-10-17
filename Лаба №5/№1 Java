@@ -1,0 +1,121 @@
+import java.util.*;
+
+public class TSPBranchAndBound {
+    private int n;
+    private int[][] graph;
+    private boolean[] visited;
+    private int finalRes = Integer.MAX_VALUE;
+    private int[] finalPath;
+
+    public TSPBranchAndBound(int[][] inputGraph) {
+        this.graph = inputGraph;
+        this.n = graph.length;
+        this.visited = new boolean[n];
+        this.finalPath = new int[n + 1];
+    }
+
+    private void copyToFinal(int[] currPath) {
+        for (int i = 0; i < n; i++)
+            finalPath[i] = currPath[i];
+        finalPath[n] = currPath[0];
+    }
+
+    private int firstMin(int i) {
+        int min = Integer.MAX_VALUE;
+        for (int k = 0; k < n; k++)
+            if (graph[i][k] < min && i != k)
+                min = graph[i][k];
+        return min;
+    }
+
+    private int secondMin(int i) {
+        int first = Integer.MAX_VALUE, second = Integer.MAX_VALUE;
+        for (int j = 0; j < n; j++) {
+            if (i == j) continue;
+            
+            if (graph[i][j] <= first) {
+                second = first;
+                first = graph[i][j];
+            } else if (graph[i][j] <= second && graph[i][j] != first) {
+                second = graph[i][j];
+            }
+        }
+        return second;
+    }
+
+    private void TSPRec(int currBound, int currWeight, int level, int[] currPath) {
+        if (level == n) {
+            if (graph[currPath[level-1]][currPath[0]] != 0) {
+                int currRes = currWeight + graph[currPath[level-1]][currPath[0]];
+                if (currRes < finalRes) {
+                    copyToFinal(currPath);
+                    finalRes = currRes;
+                }
+            }
+            return;
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (graph[currPath[level-1]][i] != 0 && !visited[i]) {
+                int temp = currBound;
+                currWeight += graph[currPath[level-1]][i];
+
+                if (level == 1)
+                    currBound -= (firstMin(currPath[level-1]) + firstMin(i)) / 2;
+                else
+                    currBound -= (secondMin(currPath[level-1]) + firstMin(i)) / 2;
+
+                if (currBound + currWeight < finalRes) {
+                    currPath[level] = i;
+                    visited[i] = true;
+                    TSPRec(currBound, currWeight, level + 1, currPath);
+                }
+
+                currWeight -= graph[currPath[level-1]][i];
+                currBound = temp;
+
+                Arrays.fill(visited, false);
+                for (int j = 0; j <= level - 1; j++)
+                    visited[currPath[j]] = true;
+            }
+        }
+    }
+
+    public void solve() {
+        int[] currPath = new int[n + 1];
+        Arrays.fill(currPath, -1);
+        Arrays.fill(visited, false);
+        
+        visited[0] = true;
+        currPath[0] = 0;
+
+        int currBound = 0;
+        for (int i = 0; i < n; i++)
+            currBound += (firstMin(i) + secondMin(i));
+
+        currBound = (currBound & 1) == 1 ? currBound / 2 + 1 : currBound / 2;
+
+        TSPRec(currBound, 0, 1, currPath);
+    }
+
+    public void printResult() {
+        System.out.println("Минимальная стоимость: " + finalRes);
+        System.out.print("Путь: ");
+        for (int i = 0; i <= n; i++)
+            System.out.print(finalPath[i] + " ");
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        int[][] graph = {
+            {0, 10, 15, 20},
+            {10, 0, 35, 25},
+            {15, 35, 0, 30},
+            {20, 25, 30, 0}
+        };
+
+        TSPBranchAndBound tsp = new TSPBranchAndBound(graph);
+        tsp.solve();
+        tsp.printResult();
+    }
+}
