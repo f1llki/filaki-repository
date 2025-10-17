@@ -1,0 +1,134 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <algorithm>
+using namespace std;
+
+class TSPGreedy {
+private:
+    int n;
+    vector<vector<int>> graph;
+    vector<int> path;
+    int total_cost;
+
+public:
+    TSPGreedy(vector<vector<int>> input_graph) {
+        graph = input_graph;
+        n = graph.size();
+        path.resize(n + 1);
+        total_cost = 0;
+    }
+
+    void solve() {
+        vector<bool> visited(n, false);
+        path[0] = 0;  // Начинаем с города 0
+        visited[0] = true;
+        
+        int current_city = 0;
+        int count = 1;
+        
+        while (count < n) {
+            int next_city = -1;
+            int min_distance = INT_MAX;
+            
+            // Ищем ближайший непосещенный город
+            for (int i = 0; i < n; i++) {
+                if (!visited[i] && graph[current_city][i] > 0 && 
+                    graph[current_city][i] < min_distance) {
+                    min_distance = graph[current_city][i];
+                    next_city = i;
+                }
+            }
+            
+            if (next_city != -1) {
+                path[count] = next_city;
+                visited[next_city] = true;
+                total_cost += min_distance;
+                current_city = next_city;
+                count++;
+            }
+        }
+        
+        // Возвращаемся в начальный город
+        total_cost += graph[current_city][0];
+        path[n] = 0;
+    }
+
+    void printResult() {
+        cout << "Стоимость (жадный алгоритм): " << total_cost << endl;
+        cout << "Путь: ";
+        for (int i = 0; i <= n; i++) {
+            cout << path[i];
+            if (i < n) cout << " -> ";
+        }
+        cout << endl;
+    }
+};
+
+// Дополнительная версия с динамическим программированием (для сравнения)
+class TSPDynamic {
+private:
+    int n;
+    vector<vector<int>> graph;
+    vector<vector<int>> dp;
+    vector<vector<int>> path;
+
+    int solve(int mask, int pos) {
+        if (mask == (1 << n) - 1) {
+            return graph[pos][0];
+        }
+        
+        if (dp[mask][pos] != -1) {
+            return dp[mask][pos];
+        }
+        
+        int ans = INT_MAX;
+        for (int city = 0; city < n; city++) {
+            if ((mask & (1 << city)) == 0 && graph[pos][city] > 0) {
+                int newAns = graph[pos][city] + solve(mask | (1 << city), city);
+                if (newAns < ans) {
+                    ans = newAns;
+                }
+            }
+        }
+        
+        return dp[mask][pos] = ans;
+    }
+
+public:
+    TSPDynamic(vector<vector<int>> input_graph) {
+        graph = input_graph;
+        n = graph.size();
+        dp.resize(1 << n, vector<int>(n, -1));
+    }
+
+    int solve() {
+        return solve(1, 0);  // Начинаем с города 0, mask = 1 (0001)
+    }
+};
+
+int main() {
+    vector<vector<int>> graph = {
+        {0, 10, 15, 20},
+        {10, 0, 35, 25},
+        {15, 35, 0, 30},
+        {20, 25, 30, 0}
+    };
+
+    cout << "=== Жадный алгоритм ===" << endl;
+    TSPGreedy tsp_greedy(graph);
+    tsp_greedy.solve();
+    tsp_greedy.printResult();
+
+    cout << "\n=== Метод ветвей и границ ===" << endl;
+    TSPBranchAndBound tsp_bb(graph);
+    tsp_bb.solve();
+    tsp_bb.printResult();
+
+    cout << "\n=== Динамическое программирование ===" << endl;
+    TSPDynamic tsp_dp(graph);
+    int result = tsp_dp.solve();
+    cout << "Минимальная стоимость (ДП): " << result << endl;
+
+    return 0;
+}
