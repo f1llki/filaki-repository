@@ -1,0 +1,49 @@
+# nfa_simulator.py
+from collections import defaultdict, deque
+
+class SimpleNFA:
+    def __init__(self):
+        self.start = None
+        self.accepts = set()
+        # transitions: state -> symbol -> set(states); epsilon transitions use symbol None
+        self.trans = defaultdict(lambda: defaultdict(set))
+
+    def add_transition(self, frm, sym, to):
+        self.trans[frm][sym].add(to)
+
+    def epsilon_closure(self, states):
+        stack = list(states)
+        closure = set(states)
+        while stack:
+            s = stack.pop()
+            for t in self.trans[s].get(None, []):  # None = ε
+                if t not in closure:
+                    closure.add(t)
+                    stack.append(t)
+        return closure
+
+    def match(self, s):
+        if self.start is None:
+            return False
+        cur = self.epsilon_closure({self.start})
+        for ch in s:
+            nxt = set()
+            for state in cur:
+                for to in self.trans[state].get(ch, []):
+                    nxt.add(to)
+            cur = self.epsilon_closure(nxt)
+            if not cur:
+                return False
+        return bool(cur & self.accepts)
+
+# пример: автомат, который принимает "ab"
+if __name__ == "__main__":
+    nfa = SimpleNFA()
+    nfa.start = 0
+    nfa.accepts = {2}
+    nfa.add_transition(0, 'a', 1)
+    nfa.add_transition(1, 'b', 2)
+
+    tests = ["ab", "a", "b", "abc"]
+    for t in tests:
+        print(f"{t} -> {nfa.match(t)}")
