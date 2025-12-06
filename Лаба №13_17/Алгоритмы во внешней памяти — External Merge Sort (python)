@@ -1,0 +1,55 @@
+# external_merge_sort.py
+import heapq
+import os
+import tempfile
+
+def create_sorted_chunks(input_iter, chunk_size):
+    temp_files = []
+    chunk = []
+    for val in input_iter:
+        chunk.append(val)
+        if len(chunk) >= chunk_size:
+            chunk.sort()
+            tf = tempfile.NamedTemporaryFile(delete=False, mode='w', newline='')
+            for x in chunk:
+                tf.write(f"{x}\n")
+            tf.close()
+            temp_files.append(tf.name)
+            chunk = []
+    if chunk:
+        chunk.sort()
+        tf = tempfile.NamedTemporaryFile(delete=False, mode='w', newline='')
+        for x in chunk:
+            tf.write(f"{x}\n")
+        tf.close()
+        temp_files.append(tf.name)
+    return temp_files
+
+def k_way_merge(temp_files, output_file):
+    files = [open(fn, 'r') for fn in temp_files]
+    heap = []
+    for i,f in enumerate(files):
+        line = f.readline().rstrip('\n')
+        if line:
+            heapq.heappush(heap, (line, i))
+    with open(output_file, 'w') as out:
+        while heap:
+            val, idx = heapq.heappop(heap)
+            out.write(val + '\n')
+            nxt = files[idx].readline().rstrip('\n')
+            if nxt:
+                heapq.heappush(heap, (nxt, idx))
+    for f in files:
+        f.close()
+    # cleanup
+    for fn in temp_files:
+        os.remove(fn)
+
+if __name__ == "__main__":
+    # demo: small in-memory "big" data
+    data = [str(x) for x in [5,1,9,3,7,2,8,4,6,0]]
+    temp_files = create_sorted_chunks(iter(data), chunk_size=3)
+    k_way_merge(temp_files, "sorted_out.txt")
+    print("Result written to sorted_out.txt")
+    print(open("sorted_out.txt").read())
+    os.remove("sorted_out.txt")
